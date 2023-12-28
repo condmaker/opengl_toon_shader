@@ -30,7 +30,7 @@ namespace SDLBase
             Texture grassNormal = new Texture(OpenTK.Graphics.OpenGL.TextureWrapMode.Repeat, OpenTK.Graphics.OpenGL.TextureMinFilter.Linear, true);
             grassNormal.Load("Textures/grass_normal.png");
 
-            Material material = new Material(Shader.Find("Shaders/phong_pp"));
+            Material material = new Material(Shader.Find("Shaders/phong_pp_toon"));
             material.Set("Color", Color4.White);
             material.Set("ColorEmissive", Color4.Black);
             material.Set("Specular", new Vector2(2.0f, 128.0f));
@@ -62,7 +62,7 @@ namespace SDLBase
 
             Mesh mesh = GeometryFactory.AddCylinder(widthTrunk, heightTrunk, 8, true);
 
-            Material material = new Material(Shader.Find("Shaders/phong_pp"));
+            Material material = new Material(Shader.Find("Shaders/phong_pp_toon"));
             material.Set("Color", new Color4(rnd.Range(0.6f, 0.9f), rnd.Range(0.4f, 0.6f), rnd.Range(0.15f, 0.35f), 1.0f));
             material.Set("ColorEmissive", Color4.Black);
             material.Set("Specular", Vector2.UnitY);
@@ -77,7 +77,7 @@ namespace SDLBase
             // Leaves
             mesh = GeometryFactory.AddCylinder(rnd.Range(widthTrunk * 1.5f, widthTrunk * 4.0f), rnd.Range(heightTrunk * 2.0f, heightTrunk * 8.0f), 16, true);
 
-            material = new Material(Shader.Find("Shaders/phong_pp"));
+            material = new Material(Shader.Find("Shaders/phong_pp_toon"));
             material.Set("Color", new Color4(rnd.Range(0.0f, 0.2f), rnd.Range(0.6f, 0.8f), rnd.Range(0.0f, 0.2f), 1.0f));
             material.Set("ColorEmissive", Color4.Black);
             material.Set("Specular", Vector2.UnitY);
@@ -121,6 +121,18 @@ namespace SDLBase
             light.cone = new Vector2(0.0f, MathF.PI / 2.0f);
             light.SetShadow(true, 2048);
 
+            // Setup directional light turned 30 degrees down
+            GameObject go2 = new GameObject();
+            go2.transform.position = new Vector3(10.0f, 5.0f, 10.0f);
+            go2.transform.rotation = Quaternion.FromAxisAngle(Vector3.UnitX, -MathF.PI);
+            Light light2 = go2.AddComponent<Light>();
+            light2.type = Light.Type.Point;
+            light2.lightColor = Color.White;
+            light2.intensity = 120.0f;
+            light2.range = 10;
+            light2.cone = new Vector2(0.0f, MathF.PI / 2.0f);
+            light2.SetShadow(true, 2048);
+
             return go;
         }
 
@@ -128,7 +140,7 @@ namespace SDLBase
         {
             Mesh mesh = GeometryFactory.AddSphere(0.5f, 32, true);
 
-            Material material = new Material(Shader.Find("Shaders/phong_pp"));
+            Material material = new Material(Shader.Find("Shaders/phong_pp_toon"));
             material.Set("Color", Color4.White);
             material.Set("ColorEmissive", Color4.Black);
             material.Set("Specular", Vector2.UnitY);
@@ -168,11 +180,11 @@ namespace SDLBase
             var ret = CreateGround(forestSize);
 
             // Create a sphere in the middle of the forest
-            /*var (reflectSphere, reflectMaterial) = CreateSphere();
+            var (reflectSphere, reflectMaterial) = CreateSphere();
             var (glowSphere, glowMaterial) = CreateSphere();
             glowSphere.transform.position = light.transform.position;
             glowMaterial.Set("Color", Color4.Black);
-            glowMaterial.Set("ColorEmissive", Color4.Yellow);*/
+            glowMaterial.Set("ColorEmissive", Color4.Yellow);
 
             // Create trees
             Random rnd = new Random(1);

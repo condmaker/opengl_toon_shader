@@ -39,7 +39,7 @@ namespace OpenTKBase
             var allLights = scene.FindObjectsOfType<Light>();
 
             // Invert cull mode for shadowmap rendering (only works if objects are all "solid")
-            GL.Enable(EnableCap.CullFace);
+            GL.Enable(EnableCap.CullFace); 
             GL.CullFace(CullFaceMode.Front);
 
             // Render shadowmaps, if needed
