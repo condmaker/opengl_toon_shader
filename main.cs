@@ -126,12 +126,18 @@ namespace SDLBase
             go2.transform.position = new Vector3(10.0f, 5.0f, 10.0f);
             go2.transform.rotation = Quaternion.FromAxisAngle(Vector3.UnitX, -MathF.PI);
             Light light2 = go2.AddComponent<Light>();
-            light2.type = Light.Type.Point;
-            light2.lightColor = Color.White;
-            light2.intensity = 120.0f;
-            light2.range = 10;
+            light2.type = Light.Type.Directional;
+            light2.lightColor = Color.Red;
+            light2.intensity = 20.0f;
+            light2.range = 200;
             light2.cone = new Vector2(0.0f, MathF.PI / 2.0f);
             light2.SetShadow(true, 2048);
+
+            // Create a sphere in the middle of the forest
+            var (glowSphere, glowMaterial) = CreateSphere();
+            glowSphere.transform.position = light.transform.position;
+            glowMaterial.Set("Color", Color4.Black);
+            glowSphere.transform.position = go.transform.position;
 
             return go;
         }
@@ -178,13 +184,6 @@ namespace SDLBase
 
             // Create ground
             var ret = CreateGround(forestSize);
-
-            // Create a sphere in the middle of the forest
-            var (reflectSphere, reflectMaterial) = CreateSphere();
-            var (glowSphere, glowMaterial) = CreateSphere();
-            glowSphere.transform.position = light.transform.position;
-            glowMaterial.Set("Color", Color4.Black);
-            glowMaterial.Set("ColorEmissive", Color4.Yellow);
 
             // Create trees
             Random rnd = new Random(1);

@@ -55,18 +55,13 @@ vec3 ComputeDirectional(Light light, vec3 worldPos, vec3 worldNormal, vec4 mater
     vec3  v = normalize(ViewPos - worldPos);
     // Light dir is from light to point, but we want the other way around, hence the V - L
     vec3  h =  normalize(v - light.direction);
-    float s = MaterialSpecular.x * pow(max(dot(h, worldNormal), 0), MaterialSpecular.y);
 
-    return clamp(d * materialColor.xyz + s, 0, 1) * light.color.rgb * light.intensity;
+    return clamp(d * materialColor.xyz, 0, 1) * light.color.rgb * light.intensity;
 }
 
 vec3 ComputePoint(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialColor)
 {
     vec3 lightDir = normalize(worldPos - light.position);
-
-    // "Level" of lighting to make hard shadows
-    float level = max(0.0, dot(worldNormal, normalize(light.position - worldPos)));
-    level = floor(level * 4) / 4.0;
 
     float d = clamp(-dot(worldNormal, lightDir), 0, 1);
     vec3  v = normalize(ViewPos - worldPos);
@@ -74,7 +69,7 @@ vec3 ComputePoint(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialCol
     vec3  h =  normalize(v - lightDir);
     float s = MaterialSpecular.x * pow(max(dot(h, worldNormal), 0), MaterialSpecular.y);
 
-    return clamp(d * materialColor.xyz + s, 0, 1) * light.color.rgb * light.intensity * ComputeAttenuation(light, worldPos) * level;
+    return clamp(d * materialColor.xyz + s, 0, 1) * light.color.rgb * light.intensity * ComputeAttenuation(light, worldPos);
 }
 
 vec3 ComputeSpot(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialColor)
@@ -106,9 +101,14 @@ vec3 ComputeSpot(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialColo
 vec3 ComputeLight(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialColor)
 {
     // Calculate the dot prod between the frag normal and the light vector
-    // and floor it to obtain hard shadows
-    float level = max(0.0, dot(worldNormal, normalize(light.position - worldPos)));
-    level = floor(level * 2) / 2.0;
+    // and floor it to obtain hard shadowsW
+    float level = dot(worldNormal, normalize(light.position - worldPos));
+    int   shadowLevel = 2;
+    
+    if (level > 0)
+        level = floor(level * shadowLevel) * (1.0 / shadowLevel);
+    else
+        level = 1;
 
     if (light.type == 0)
     {
