@@ -51,7 +51,10 @@ float ComputeAttenuation(Light light, vec3 worldPos)
 
 vec3 ComputeDirectionalToon(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialColor)
 {
-    float d = clamp(-dot(worldNormal, light.direction), 0, 1);
+    float bands = 0.1;
+    float brightness = 0.1;
+
+    float d = floor(clamp(-dot(worldNormal, light.direction), 0, 1) / bands);
     vec3  v = normalize(ViewPos - worldPos);
     // Light dir is from light to point, but we want the other way around, hence the V - L
     vec3  h =  normalize(v - light.direction);
@@ -63,13 +66,16 @@ vec3 ComputePointToon(Light light, vec3 worldPos, vec3 worldNormal, vec4 materia
 {
     vec3 lightDir = normalize(worldPos - light.position);
 
-    float d = clamp(-dot(worldNormal, lightDir), 0, 1);
+    float bands = 0.1;
+    float brightness = 0.1;
+
+    float d = floor(clamp(-dot(worldNormal, lightDir), 0, 1) / bands);
     vec3  v = normalize(ViewPos - worldPos);
     // Light dir is from light to point, but we want the other way around, hence the V - L
     vec3  h =  normalize(v - lightDir);
     float s = MaterialSpecular.x * pow(max(dot(h, worldNormal), 0), MaterialSpecular.y);
 
-    return clamp(d * materialColor.xyz + s, 0, 1) * light.color.rgb * light.intensity * ComputeAttenuation(light, worldPos);
+    return clamp(d * materialColor.xyz + (floor(s / bands) * light.intensity), 0, 1) * light.color.rgb * ComputeAttenuation(light, worldPos);
 }
 
 vec3 ComputeSpotToon(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialColor)
@@ -98,7 +104,7 @@ vec3 ComputeSpotToon(Light light, vec3 worldPos, vec3 worldNormal, vec4 material
     float bias = 0.0;
     float shadowFactor = floor(texture(light.shadowmap, shadowProj.xyz));
    
-    return shadowFactor * clamp(d * materialColor.xyz + floor(s / bands), 0, 1) * light.color.rgb * light.intensity;
+    return shadowFactor * clamp(d * materialColor.xyz + (floor(s / bands) * light.intensity + brightness), 0, 1) * light.color.rgb;
 }
 
 vec3 ComputeLight(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialColor)

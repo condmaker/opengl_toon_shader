@@ -116,7 +116,7 @@ namespace SDLBase
             Light light = go.AddComponent<Light>();
             light.type = Light.Type.Spot;
             light.lightColor = Color.White;
-            light.intensity = 1.0f;
+            light.intensity = 1f;
             light.range = 200;
             light.cone = new Vector2(0.0f, MathF.PI / 2.0f);
             light.SetShadow(true, 2048);
