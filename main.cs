@@ -116,28 +116,11 @@ namespace SDLBase
             Light light = go.AddComponent<Light>();
             light.type = Light.Type.Spot;
             light.lightColor = Color.White;
-            light.intensity = 5.0f;
+            light.intensity = 1.0f;
             light.range = 200;
             light.cone = new Vector2(0.0f, MathF.PI / 2.0f);
             light.SetShadow(true, 2048);
 
-            // Setup directional light turned 30 degrees down
-            GameObject go2 = new GameObject();
-            go2.transform.position = new Vector3(10.0f, 5.0f, 10.0f);
-            go2.transform.rotation = Quaternion.FromAxisAngle(Vector3.UnitX, -MathF.PI);
-            Light light2 = go2.AddComponent<Light>();
-            light2.type = Light.Type.Directional;
-            light2.lightColor = Color.Red;
-            light2.intensity = 20.0f;
-            light2.range = 200;
-            light2.cone = new Vector2(0.0f, MathF.PI / 2.0f);
-            light2.SetShadow(true, 2048);
-
-            // Create a sphere in the middle of the forest
-            var (glowSphere, glowMaterial) = CreateSphere();
-            glowSphere.transform.position = light.transform.position;
-            glowMaterial.Set("Color", Color4.Black);
-            glowSphere.transform.position = go.transform.position;
 
             return go;
         }

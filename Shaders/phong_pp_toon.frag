@@ -49,7 +49,7 @@ float ComputeAttenuation(Light light, vec3 worldPos)
     return saturate(saturate(5 * (1 - d)) / (1 + 25 * d * d));
 }
 
-vec3 ComputeDirectional(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialColor)
+vec3 ComputeDirectionalToon(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialColor)
 {
     float d = clamp(-dot(worldNormal, light.direction), 0, 1);
     vec3  v = normalize(ViewPos - worldPos);
@@ -59,7 +59,7 @@ vec3 ComputeDirectional(Light light, vec3 worldPos, vec3 worldNormal, vec4 mater
     return clamp(d * materialColor.xyz, 0, 1) * light.color.rgb * light.intensity;
 }
 
-vec3 ComputePoint(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialColor)
+vec3 ComputePointToon(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialColor)
 {
     vec3 lightDir = normalize(worldPos - light.position);
 
@@ -72,18 +72,21 @@ vec3 ComputePoint(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialCol
     return clamp(d * materialColor.xyz + s, 0, 1) * light.color.rgb * light.intensity * ComputeAttenuation(light, worldPos);
 }
 
-vec3 ComputeSpot(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialColor)
+vec3 ComputeSpotToon(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialColor)
 {
     vec3  lightDir = normalize(worldPos - light.position);
     float cosAngle = dot(lightDir, light.direction);
     float spot = clamp((cosAngle - light.spot.w) / (light.spot.z - light.spot.w), 0, 1);
 
-    float d = spot * clamp(-dot(worldNormal, lightDir), 0, 1);
+    float bands = 0.1;
+    float brightness = 0.1;
+
+    float d = floor(spot * clamp(-dot(worldNormal, lightDir), 0, 1) / bands);
 
     vec3  v = normalize(ViewPos - worldPos);
     // Light dir is from light to point, but we want the other way around, hence the V - L
     vec3  h =  normalize(v - lightDir);
-    float s = spot * max(0, spot * MaterialSpecular.x * pow(max(dot(h, worldNormal), 0), MaterialSpecular.y));
+    float s = spot * max(0, spot * MaterialSpecular.x * pow(max(dot(h, worldNormal), 0), MaterialSpecular.y)) * ComputeAttenuation(light, worldPos);
 
     // Compute shadow
     vec4 shadowProj = light.shadowMatrix * vec4(worldPos, 1);
@@ -93,34 +96,24 @@ vec3 ComputeSpot(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialColo
     shadowProj = shadowProj * 0.5 + 0.5;
     // Fetch depth while comparing
     float bias = 0.0;
-    float shadowFactor = texture(light.shadowmap, shadowProj.xyz);
+    float shadowFactor = floor(texture(light.shadowmap, shadowProj.xyz));
    
-    return shadowFactor * clamp(d * materialColor.xyz + s, 0, 1) * light.color.rgb * light.intensity * ComputeAttenuation(light, worldPos);
+    return shadowFactor * clamp(d * materialColor.xyz + floor(s / bands), 0, 1) * light.color.rgb * light.intensity;
 }
 
 vec3 ComputeLight(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialColor)
 {
-    // Calculate the dot prod between the frag normal and the light vector
-    // and floor it to obtain hard shadowsW
-    float level = dot(worldNormal, normalize(light.position - worldPos));
-    int   shadowLevel = 2;
-    
-    if (level > 0)
-        level = floor(level * shadowLevel) * (1.0 / shadowLevel);
-    else
-        level = 1;
-
     if (light.type == 0)
     {
-        return ComputeDirectional(light, worldPos, worldNormal, materialColor) * level;
+        return ComputeDirectionalToon(light, worldPos, worldNormal, materialColor);
     }
     else if (light.type == 1)
     {
-        return ComputePoint(light, worldPos, worldNormal, materialColor) * level;
+        return ComputePointToon(light, worldPos, worldNormal, materialColor);
     }
     else if (light.type == 2)
     {
-        return ComputeSpot(light, worldPos, worldNormal, materialColor) * level;
+        return ComputeSpotToon(light, worldPos, worldNormal, materialColor);
     }
 }
 
@@ -170,20 +163,7 @@ void main()
         directLight += ComputeLight(Lights[i], worldPos, worldNormal, matColor);
     }    
 
-    // Outline
-    // Calculate the dot prod of the fragment's normal with the fragment to
-    // camera vector
-    vec4 outlineColor = vec4(0, 0, 0, 1);
-    float cameraFacingPercentage = dot(fragToCam, fragNormal);
-
-    if (cameraFacingPercentage < 0)
-    {
-        OutputColor = vec4(envLighting + emissiveLighting + directLight, 1);
-    }
-    else 
-    {
-        OutputColor = vec4(envLighting + emissiveLighting + directLight, 1);
-    }
+    OutputColor = vec4(envLighting + emissiveLighting + directLight, 1);
 
     // Fog
     float distToCamera = length(worldPos - ViewPos);
