@@ -34,6 +34,9 @@ namespace OpenTKBase
         {
             if (scene == null) return;
 
+            var outlineMaterial = new Material(Shader.Find("Shaders/outline"));
+            outlineMaterial.Set("Color", Color4.Black);
+
             var allCameras = scene.FindObjectsOfType<Camera>();
             var allRender = scene.FindObjectsOfType<Renderable>();
             var allLights = scene.FindObjectsOfType<Light>();
@@ -124,7 +127,13 @@ namespace OpenTKBase
 
                 foreach (var render in allRender)
                 {
+                    // Render the normal object
                     render.Render(camera, null);
+
+                    // Render the outline 
+                    GL.CullFace(CullFaceMode.Front);
+                    render.Render(camera, outlineMaterial);
+                    GL.CullFace(CullFaceMode.Back);
                 }
             }
         }

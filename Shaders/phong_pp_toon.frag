@@ -104,7 +104,7 @@ vec3 ComputeSpotToon(Light light, vec3 worldPos, vec3 worldNormal, vec4 material
     float bias = 0.0;
     float shadowFactor = floor(texture(light.shadowmap, shadowProj.xyz));
    
-    return shadowFactor * clamp(d * materialColor.xyz + (floor(s / bands) * light.intensity + brightness), 0, 1) * light.color.rgb;
+    return shadowFactor * clamp(d * materialColor.xyz + (floor(s / bands) * light.intensity), 0, 1) * light.color.rgb;
 }
 
 vec3 ComputeLight(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialColor)
@@ -163,7 +163,7 @@ void main()
     vec3 emissiveLighting = MaterialColorEmissive.rgb;
 
     // Direct light
-    vec3 directLight = vec3(0,0,0);
+    vec3 directLight = vec3(0.0, 0.0, 0.0);
     for (int i = 0; i < LightCount; i++)
     {
         directLight += ComputeLight(Lights[i], worldPos, worldNormal, matColor);

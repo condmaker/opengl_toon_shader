@@ -9,14 +9,12 @@ uniform mat4        MatrixWorld;
 
 out vec3 fragPos;
 out vec3 fragNormal;
-out vec3 fragPosOutline;
 out vec4 fragTangent;
 out vec2 fragUV;
 
 void main()
 {
     fragPos = (MatrixWorld * vec4(position, 1)).xyz;
-    fragPosOutline = (MatrixWorld * vec4(position * 1.8, 1)).xyz;
     fragNormal = (MatrixWorld * vec4(normal, 0)).xyz;
     fragTangent = vec4((MatrixWorld * vec4(tangent.xyz, 0)).xyz, tangent.w);
     fragUV = uv;
