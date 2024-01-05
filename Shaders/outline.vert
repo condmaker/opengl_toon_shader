@@ -9,5 +9,5 @@ void main()
 {
     float outVal = 0.1;
 
-    gl_Position = MatrixClip * vec4(position + normalize(normal) * outVal, 1.0);
+    gl_Position = MatrixClip * vec4(position + normal * outVal , 1.0);
 }

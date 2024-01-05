@@ -85,7 +85,6 @@ vec3 ComputeSpotToon(Light light, vec3 worldPos, vec3 worldNormal, vec4 material
     float spot = clamp((cosAngle - light.spot.w) / (light.spot.z - light.spot.w), 0, 1);
 
     float bands = 0.1;
-    float brightness = 0.1;
 
     float d = floor(spot * clamp(-dot(worldNormal, lightDir), 0, 1) / bands);
 
